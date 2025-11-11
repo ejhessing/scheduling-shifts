@@ -1,0 +1,31 @@
+{
+  "name": "time-tracking-app",
+  "version": "1.0.0",
+  "description": "Ultimate Time Tracking & Scheduling Platform",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "frontend/web"
+  ],
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend/web && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend/web && npm run dev",
+    "deploy:backend": "cd backend && npm run deploy",
+    "build:frontend": "cd frontend/web && npm run build",
+    "test": "npm run test --workspaces"
+  },
+  "keywords": [
+    "time-tracking",
+    "scheduling",
+    "workforce-management",
+    "aws",
+    "serverless"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5"
+  }
+}
