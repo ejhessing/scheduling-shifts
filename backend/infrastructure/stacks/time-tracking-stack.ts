@@ -374,6 +374,71 @@ export class TimeTrackingStack extends cdk.Stack {
       new eventsTargets.LambdaFunction(scheduledNotificationsFunction)
     );
 
+    // ========== Time-Off Management Lambda Functions ==========
+    const requestTimeOffFunction = new NodejsFunction(this, 'RequestTimeOffFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/timeOff/requestTimeOff.ts'),
+      handler: 'handler',
+      description: 'Request time off',
+    });
+
+    const reviewTimeOffFunction = new NodejsFunction(this, 'ReviewTimeOffFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/timeOff/reviewTimeOff.ts'),
+      handler: 'handler',
+      description: 'Review time-off requests',
+    });
+
+    const getTimeOffRequestsFunction = new NodejsFunction(this, 'GetTimeOffRequestsFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/timeOff/getTimeOffRequests.ts'),
+      handler: 'handler',
+      description: 'Get time-off requests',
+    });
+
+    const getTimeOffBalanceFunction = new NodejsFunction(this, 'GetTimeOffBalanceFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/timeOff/getTimeOffBalance.ts'),
+      handler: 'handler',
+      description: 'Get time-off balance',
+    });
+
+    // ========== Advanced Scheduling Lambda Functions ==========
+    const createShiftTemplateFunction = new NodejsFunction(this, 'CreateShiftTemplateFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/scheduling/createShiftTemplate.ts'),
+      handler: 'handler',
+      description: 'Create shift template',
+    });
+
+    const getShiftTemplatesFunction = new NodejsFunction(this, 'GetShiftTemplatesFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/scheduling/getShiftTemplates.ts'),
+      handler: 'handler',
+      description: 'Get shift templates',
+    });
+
+    const setAvailabilityFunction = new NodejsFunction(this, 'SetAvailabilityFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/scheduling/setAvailability.ts'),
+      handler: 'handler',
+      description: 'Set employee availability',
+    });
+
+    const getAvailabilityFunction = new NodejsFunction(this, 'GetAvailabilityFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/scheduling/getAvailability.ts'),
+      handler: 'handler',
+      description: 'Get employee availability',
+    });
+
+    const checkScheduleConflictsFunction = new NodejsFunction(this, 'CheckScheduleConflictsFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/scheduling/checkScheduleConflicts.ts'),
+      handler: 'handler',
+      description: 'Check schedule conflicts',
+    });
+
     // ========== Grant Permissions ==========
     // Grant all Lambda functions read/write access to DynamoDB
     const allFunctions = [
@@ -401,6 +466,15 @@ export class TimeTrackingStack extends cdk.Stack {
       checkComplianceFunction,
       sendNotificationFunction,
       scheduledNotificationsFunction,
+      requestTimeOffFunction,
+      reviewTimeOffFunction,
+      getTimeOffRequestsFunction,
+      getTimeOffBalanceFunction,
+      createShiftTemplateFunction,
+      getShiftTemplatesFunction,
+      setAvailabilityFunction,
+      getAvailabilityFunction,
+      checkScheduleConflictsFunction,
     ];
 
     allFunctions.forEach((fn) => {
@@ -554,6 +628,53 @@ export class TimeTrackingStack extends cdk.Stack {
     // Compliance routes
     const complianceResource = api.root.addResource('compliance');
     complianceResource.addResource('check').addMethod('GET', new apigateway.LambdaIntegration(checkComplianceFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    // Time-Off routes
+    const timeOffResource = api.root.addResource('time-off');
+    timeOffResource.addResource('request').addMethod('POST', new apigateway.LambdaIntegration(requestTimeOffFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    timeOffResource.addResource('requests').addMethod('GET', new apigateway.LambdaIntegration(getTimeOffRequestsFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    timeOffResource.addResource('balance').addMethod('GET', new apigateway.LambdaIntegration(getTimeOffBalanceFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    const timeOffRequestResource = timeOffResource.addResource('{requestId}');
+    timeOffRequestResource.addResource('review').addMethod('POST', new apigateway.LambdaIntegration(reviewTimeOffFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    // Advanced Scheduling routes
+    const templatesResource = scheduleResource.addResource('templates');
+    templatesResource.addMethod('GET', new apigateway.LambdaIntegration(getShiftTemplatesFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    templatesResource.addMethod('POST', new apigateway.LambdaIntegration(createShiftTemplateFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    const availabilityResource = scheduleResource.addResource('availability');
+    availabilityResource.addMethod('GET', new apigateway.LambdaIntegration(getAvailabilityFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    availabilityResource.addMethod('POST', new apigateway.LambdaIntegration(setAvailabilityFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    scheduleResource.addResource('conflicts').addMethod('GET', new apigateway.LambdaIntegration(checkScheduleConflictsFunction), {
       authorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });

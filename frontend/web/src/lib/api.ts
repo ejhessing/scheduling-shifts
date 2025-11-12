@@ -121,3 +121,67 @@ export const reportsApi = {
     userId?: string;
   }) => api.get('/reports/generate', { params, responseType: params.format === 'csv' ? 'blob' : 'json' }),
 };
+
+export const timeOffApi = {
+  requestTimeOff: (data: {
+    type: 'vacation' | 'sick' | 'personal' | 'unpaid' | 'other';
+    startDate: string;
+    endDate: string;
+    reason?: string;
+  }) => api.post('/time-off/request', data),
+  reviewTimeOff: (requestId: string, action: 'approve' | 'reject', notes?: string) =>
+    api.post(`/time-off/${requestId}/review`, { action, notes }),
+  getRequests: (params?: { userId?: string; status?: string; startDate?: string; endDate?: string }) =>
+    api.get('/time-off/requests', { params }),
+  getPendingRequests: () => api.get('/time-off/requests', { params: { status: 'pending' } }),
+  getBalance: (userId?: string) => api.get('/time-off/balance', { params: userId ? { userId } : {} }),
+};
+
+export const schedulingApi = {
+  // Existing schedule methods
+  getSchedule: (startDate: string, endDate: string, params?: { userId?: string; locationId?: string }) =>
+    api.get('/schedule', { params: { startDate, endDate, ...params } }),
+  createShift: (data: any) => api.post('/schedule/shifts', data),
+  updateShift: (shiftId: string, data: any) => api.put(`/schedule/shifts/${shiftId}`, data),
+  deleteShift: (shiftId: string) => api.delete(`/schedule/shifts/${shiftId}`),
+  swapShift: (data: { shiftId: string; targetUserId: string; message?: string }) =>
+    api.post('/schedule/shifts/swap', data),
+
+  // New advanced scheduling features
+  createTemplate: (data: {
+    name: string;
+    description?: string;
+    locationId: string;
+    position?: string;
+    startTime: string;
+    endTime: string;
+    daysOfWeek: number[];
+    color?: string;
+  }) => api.post('/schedule/templates', data),
+  getTemplates: () => api.get('/schedule/templates'),
+
+  setAvailability: (data: {
+    userId?: string;
+    availabilities: Array<{
+      dayOfWeek: number;
+      startTime: string;
+      endTime: string;
+      effectiveDate?: string;
+      expiryDate?: string;
+      notes?: string;
+    }>;
+  }) => api.post('/schedule/availability', data),
+  getAvailability: (userId?: string) => api.get('/schedule/availability', { params: userId ? { userId } : {} }),
+
+  checkConflicts: (startDate: string, endDate: string) =>
+    api.get('/schedule/conflicts', { params: { startDate, endDate } }),
+};
+
+export const complianceApi = {
+  checkCompliance: (params: { userId?: string; startDate: string; endDate: string }) =>
+    api.get('/compliance/check', { params }),
+};
+
+// Legacy exports for backward compatibility
+export const usersApi = userApi;
+export const locationsApi = locationApi;
