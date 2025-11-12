@@ -289,6 +289,16 @@ export class TimeTrackingStack extends cdk.Stack {
       description: 'Request shift swap',
     });
 
+    // ========== Reports Lambda Functions ==========
+    const generateReportFunction = new NodejsFunction(this, 'GenerateReportFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/reports/generateReport.ts'),
+      handler: 'handler',
+      description: 'Generate reports with CSV export',
+      timeout: cdk.Duration.seconds(60), // Reports may take longer
+      memorySize: 1024, // More memory for processing
+    });
+
     // ========== Grant Permissions ==========
     // Grant all Lambda functions read/write access to DynamoDB
     const allFunctions = [
@@ -312,6 +322,7 @@ export class TimeTrackingStack extends cdk.Stack {
       deleteShiftFunction,
       getScheduleFunction,
       swapShiftFunction,
+      generateReportFunction,
     ];
 
     allFunctions.forEach((fn) => {
@@ -451,6 +462,13 @@ export class TimeTrackingStack extends cdk.Stack {
     });
 
     shiftsResource.addResource('swap').addMethod('POST', new apigateway.LambdaIntegration(swapShiftFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    // Reports routes
+    const reportsResource = api.root.addResource('reports');
+    reportsResource.addResource('generate').addMethod('GET', new apigateway.LambdaIntegration(generateReportFunction), {
       authorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });

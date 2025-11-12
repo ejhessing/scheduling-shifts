@@ -111,3 +111,13 @@ export const scheduleApi = {
   swapShift: (data: { shiftId: string; targetUserId: string; message?: string }) =>
     api.post('/schedule/shifts/swap', data),
 };
+
+export const reportsApi = {
+  generateReport: (params: {
+    type: 'timesheet' | 'labor_cost' | 'attendance' | 'overtime';
+    startDate: string;
+    endDate: string;
+    format?: 'json' | 'csv';
+    userId?: string;
+  }) => api.get('/reports/generate', { params, responseType: params.format === 'csv' ? 'blob' : 'json' }),
+};
