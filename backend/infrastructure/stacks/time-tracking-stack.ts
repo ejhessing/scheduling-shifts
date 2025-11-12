@@ -224,6 +224,35 @@ export class TimeTrackingStack extends cdk.Stack {
       description: 'Approve time entries',
     });
 
+    // ========== Location Management Lambda Functions ==========
+    const createLocationFunction = new NodejsFunction(this, 'CreateLocationFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/locations/createLocation.ts'),
+      handler: 'handler',
+      description: 'Create location',
+    });
+
+    const getLocationsFunction = new NodejsFunction(this, 'GetLocationsFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/locations/getLocations.ts'),
+      handler: 'handler',
+      description: 'Get all locations',
+    });
+
+    const updateLocationFunction = new NodejsFunction(this, 'UpdateLocationFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/locations/updateLocation.ts'),
+      handler: 'handler',
+      description: 'Update location',
+    });
+
+    const deleteLocationFunction = new NodejsFunction(this, 'DeleteLocationFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/locations/deleteLocation.ts'),
+      handler: 'handler',
+      description: 'Delete location',
+    });
+
     // ========== Scheduling Lambda Functions ==========
     const createShiftFunction = new NodejsFunction(this, 'CreateShiftFunction', {
       ...lambdaDefaults,
@@ -269,6 +298,10 @@ export class TimeTrackingStack extends cdk.Stack {
       getUserProfileFunction,
       updateUserProfileFunction,
       listUsersFunction,
+      createLocationFunction,
+      getLocationsFunction,
+      updateLocationFunction,
+      deleteLocationFunction,
       clockInFunction,
       clockOutFunction,
       getTimesheetFunction,
@@ -343,6 +376,27 @@ export class TimeTrackingStack extends cdk.Stack {
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });
     userResource.addMethod('PUT', new apigateway.LambdaIntegration(updateUserProfileFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    // Location routes
+    const locationsResource = api.root.addResource('locations');
+    locationsResource.addMethod('GET', new apigateway.LambdaIntegration(getLocationsFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    locationsResource.addMethod('POST', new apigateway.LambdaIntegration(createLocationFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    const locationResource = locationsResource.addResource('{locationId}');
+    locationResource.addMethod('PUT', new apigateway.LambdaIntegration(updateLocationFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    locationResource.addMethod('DELETE', new apigateway.LambdaIntegration(deleteLocationFunction), {
       authorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });

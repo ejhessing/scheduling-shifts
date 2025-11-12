@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { timeApi } from '../lib/api';
+import { timeApi, locationApi } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
 import { Clock, MapPin, Camera, CheckCircle, XCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -11,6 +11,7 @@ export default function TimeTrackingPage() {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locationError, setLocationError] = useState('');
   const [notes, setNotes] = useState('');
+  const [selectedLocationId, setSelectedLocationId] = useState<string>('');
 
   // Get current active entry
   const { data: timesheetData, isLoading } = useQuery({
@@ -28,6 +29,15 @@ export default function TimeTrackingPage() {
   });
 
   const activeEntry = timesheetData?.entries?.find((e: any) => !e.clockOutTime);
+
+  // Get locations
+  const { data: locationsData } = useQuery({
+    queryKey: ['locations'],
+    queryFn: async () => {
+      const response = await locationApi.getLocations();
+      return response.data.data;
+    },
+  });
 
   // Get current location
   const getLocation = () => {
@@ -55,14 +65,16 @@ export default function TimeTrackingPage() {
   // Clock in mutation
   const clockInMutation = useMutation({
     mutationFn: async () => {
+      if (!selectedLocationId) {
+        throw new Error('Please select a location');
+      }
+
       const loc = await getLocation();
       setLocation(loc);
       setLocationError('');
 
-      // For demo, use a default location ID
-      // In production, you'd select from available locations
       return timeApi.clockIn({
-        locationId: 'default-location-id',
+        locationId: selectedLocationId,
         location: loc,
         notes: notes,
       });
@@ -153,6 +165,33 @@ export default function TimeTrackingPage() {
                 <p className="text-xs text-red-700 mt-1">{locationError}</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Location selector (only for clock in) */}
+        {!activeEntry && (
+          <div className="mb-6">
+            <label htmlFor="location" className="label">
+              Location
+            </label>
+            <select
+              id="location"
+              value={selectedLocationId}
+              onChange={(e) => setSelectedLocationId(e.target.value)}
+              className="input"
+            >
+              <option value="">Select a location</option>
+              {locationsData?.locations?.map((loc: any) => (
+                <option key={loc.locationId} value={loc.locationId}>
+                  {loc.name}
+                </option>
+              ))}
+            </select>
+            {locationsData?.locations?.length === 0 && (
+              <p className="mt-2 text-sm text-gray-600">
+                No locations available. Please contact your manager to create locations.
+              </p>
+            )}
           </div>
         )}
 

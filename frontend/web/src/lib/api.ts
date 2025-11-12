@@ -79,6 +79,13 @@ export const userApi = {
   listUsers: () => api.get('/users'),
 };
 
+export const locationApi = {
+  getLocations: () => api.get('/locations'),
+  createLocation: (data: any) => api.post('/locations', data),
+  updateLocation: (locationId: string, data: any) => api.put(`/locations/${locationId}`, data),
+  deleteLocation: (locationId: string) => api.delete(`/locations/${locationId}`),
+};
+
 export const timeApi = {
   clockIn: (data: { locationId: string; location: any; photo?: string; notes?: string }) =>
     api.post('/time/clock-in', data),

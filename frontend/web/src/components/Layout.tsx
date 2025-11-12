@@ -10,6 +10,8 @@ import {
   LogOut,
   Menu,
   X,
+  MapPin,
+  Shield,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -28,11 +30,25 @@ export default function Layout({ children }: LayoutProps) {
     navigate('/login');
   };
 
-  const navigation = [
+  const isManager = ['manager', 'admin', 'owner'].includes(user?.role || '');
+
+  const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Time Tracking', href: '/time-tracking', icon: Clock },
     { name: 'Schedule', href: '/schedule', icon: Calendar },
     { name: 'Timesheet', href: '/timesheet', icon: FileText },
+  ];
+
+  const managerNavigation = isManager
+    ? [
+        { name: 'Admin Dashboard', href: '/admin', icon: Shield },
+        { name: 'Locations', href: '/locations', icon: MapPin },
+      ]
+    : [];
+
+  const navigation = [
+    ...baseNavigation,
+    ...managerNavigation,
     { name: 'Profile', href: '/profile', icon: User },
   ];
 

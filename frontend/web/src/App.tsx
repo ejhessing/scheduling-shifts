@@ -8,6 +8,8 @@ import DashboardPage from './pages/DashboardPage';
 import TimeTrackingPage from './pages/TimeTrackingPage';
 import SchedulePage from './pages/SchedulePage';
 import TimesheetPage from './pages/TimesheetPage';
+import LocationsPage from './pages/LocationsPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import ProfilePage from './pages/ProfilePage';
 
 // Layout
@@ -87,6 +89,22 @@ function App() {
           element={
             <ProtectedRoute>
               <TimesheetPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/locations"
+          element={
+            <ProtectedRoute>
+              <LocationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboardPage />
             </ProtectedRoute>
           }
         />
