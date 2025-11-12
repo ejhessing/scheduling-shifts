@@ -2,8 +2,8 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Calendar, dateFnsLocalizer, SlotInfo, Event } from 'react-big-calendar';
 import { format, parse, startOfWeek, getDay, addDays, startOfMonth, endOfMonth } from 'date-fns';
-import { useAuthStore } from '../store/authStore';
-import { schedulingApi, usersApi, locationsApi } from '../api/client';
+import { useAuthStore } from '../stores/authStore';
+import { schedulingApi, usersApi, locationsApi } from '../lib/api';
 import { Plus, AlertTriangle, Users, MapPin, Clock } from 'lucide-react';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../store/authStore';
-import { timeOffApi } from '../api/client';
+import { useAuthStore } from '../stores/authStore';
+import { timeOffApi } from '../lib/api';
 import { Calendar, Plus, Check, X, Clock, AlertCircle } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 
