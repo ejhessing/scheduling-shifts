@@ -145,6 +145,55 @@ class ApiClient {
     const response = await this.client.post('/schedule/shifts/swap', data);
     return response.data;
   }
+
+  // Shift swap methods (Phase 2)
+  async createSwapRequest(data: any) {
+    const response = await this.client.post('/schedule/swaps', data);
+    return response.data;
+  }
+
+  async respondToSwapRequest(swapId: string, action: 'accept' | 'decline', reason?: string) {
+    const response = await this.client.post(`/schedule/swaps/${swapId}/respond`, { action, reason });
+    return response.data;
+  }
+
+  async approveSwapRequest(swapId: string, action: 'approve' | 'reject', reason?: string) {
+    const response = await this.client.post(`/schedule/swaps/${swapId}/approve`, { action, reason });
+    return response.data;
+  }
+
+  async listSwapRequests(type: 'received' | 'sent' | 'pending_approval') {
+    const response = await this.client.get('/schedule/swaps', { params: { type } });
+    return response.data;
+  }
+
+  // Reporting methods (Phase 2)
+  async getLaborCostAnalysis(params: { startDate: string; endDate: string; locationId?: string }) {
+    const response = await this.client.get('/reports/labor-cost', { params });
+    return response.data;
+  }
+
+  async getAttendanceReport(params: { startDate: string; endDate: string }) {
+    const response = await this.client.get('/reports/attendance', { params });
+    return response.data;
+  }
+
+  // Auto-scheduling (Phase 3)
+  async autoSchedule(data: any) {
+    const response = await this.client.post('/schedule/auto-schedule', data);
+    return response.data;
+  }
+
+  // Payroll integration (Phase 3)
+  async exportToQuickBooks(data: { startDate: string; endDate: string }) {
+    const response = await this.client.post('/payroll/quickbooks/export', data);
+    return response.data;
+  }
+
+  async exportToGusto(data: { startDate: string; endDate: string }) {
+    const response = await this.client.post('/payroll/gusto/export', data);
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();

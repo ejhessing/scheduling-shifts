@@ -23,6 +23,7 @@ export default function Layout() {
           <Link to="/" className="navbar-link">Dashboard</Link>
           <Link to="/schedule" className="navbar-link">Schedule</Link>
           <Link to="/timesheet" className="navbar-link">Timesheet</Link>
+          <Link to="/analytics" className="navbar-link">Analytics</Link>
         </div>
         <div className="navbar-user">
           <span>{user?.name}</span>

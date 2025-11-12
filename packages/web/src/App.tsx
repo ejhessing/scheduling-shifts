@@ -7,6 +7,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Schedule from './pages/Schedule';
 import Timesheet from './pages/Timesheet';
+import Analytics from './pages/Analytics';
 import Layout from './components/Layout';
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/schedule" element={<Schedule />} />
         <Route path="/timesheet" element={<Timesheet />} />
+        <Route path="/analytics" element={<Analytics />} />
       </Route>
     </Routes>
   );
