@@ -6,6 +6,10 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as snsSubscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
+import * as events from 'aws-cdk-lib/aws-events';
+import * as eventsTargets from 'aws-cdk-lib/aws-events-targets';
 import { Construct } from 'constructs';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as path from 'path';
@@ -299,6 +303,77 @@ export class TimeTrackingStack extends cdk.Stack {
       memorySize: 1024, // More memory for processing
     });
 
+    // ========== SNS Topic for Notifications ==========
+    const notificationTopic = new sns.Topic(this, 'NotificationTopic', {
+      topicName: 'TimeTrackingNotifications',
+      displayName: 'Time Tracking App Notifications',
+    });
+
+    // ========== Compliance Lambda Functions ==========
+    const checkComplianceFunction = new NodejsFunction(this, 'CheckComplianceFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/compliance/checkCompliance.ts'),
+      handler: 'handler',
+      description: 'Check compliance violations',
+    });
+
+    // ========== Notification Lambda Functions ==========
+    const sendNotificationFunction = new NodejsFunction(this, 'SendNotificationFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/notifications/sendNotification.ts'),
+      handler: 'handler',
+      description: 'Send email notifications via SES',
+      environment: {
+        ...commonEnv,
+        NOTIFICATION_TOPIC_ARN: notificationTopic.topicArn,
+        FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@timetracking.com',
+        FRONTEND_URL: process.env.FRONTEND_URL || 'https://app.timetracking.com',
+      },
+    });
+
+    const scheduledNotificationsFunction = new NodejsFunction(this, 'ScheduledNotificationsFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/notifications/scheduledNotifications.ts'),
+      handler: 'handler',
+      description: 'Scheduled notification checks',
+      timeout: cdk.Duration.seconds(60),
+      environment: {
+        ...commonEnv,
+        NOTIFICATION_TOPIC_ARN: notificationTopic.topicArn,
+      },
+    });
+
+    // Subscribe notification handler to SNS topic
+    notificationTopic.addSubscription(
+      new snsSubscriptions.LambdaSubscription(sendNotificationFunction)
+    );
+
+    // Grant SES permissions to send emails
+    sendNotificationFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['ses:SendEmail', 'ses:SendRawEmail'],
+        resources: ['*'],
+      })
+    );
+
+    // Grant SNS publish permissions to scheduled notifications
+    scheduledNotificationsFunction.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: ['sns:Publish'],
+        resources: [notificationTopic.topicArn],
+      })
+    );
+
+    // Create EventBridge rule for scheduled notifications (runs every hour)
+    const notificationRule = new events.Rule(this, 'NotificationScheduleRule', {
+      schedule: events.Schedule.rate(cdk.Duration.hours(1)),
+      description: 'Trigger hourly notification checks',
+    });
+
+    notificationRule.addTarget(
+      new eventsTargets.LambdaFunction(scheduledNotificationsFunction)
+    );
+
     // ========== Grant Permissions ==========
     // Grant all Lambda functions read/write access to DynamoDB
     const allFunctions = [
@@ -323,6 +398,9 @@ export class TimeTrackingStack extends cdk.Stack {
       getScheduleFunction,
       swapShiftFunction,
       generateReportFunction,
+      checkComplianceFunction,
+      sendNotificationFunction,
+      scheduledNotificationsFunction,
     ];
 
     allFunctions.forEach((fn) => {
@@ -469,6 +547,13 @@ export class TimeTrackingStack extends cdk.Stack {
     // Reports routes
     const reportsResource = api.root.addResource('reports');
     reportsResource.addResource('generate').addMethod('GET', new apigateway.LambdaIntegration(generateReportFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    // Compliance routes
+    const complianceResource = api.root.addResource('compliance');
+    complianceResource.addResource('check').addMethod('GET', new apigateway.LambdaIntegration(checkComplianceFunction), {
       authorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });
