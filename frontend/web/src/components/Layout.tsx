@@ -15,6 +15,7 @@ import {
   Umbrella,
   CalendarDays,
   TrendingUp,
+  DollarSign,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -47,6 +48,7 @@ export default function Layout({ children }: LayoutProps) {
     ? [
         { name: 'Calendar', href: '/calendar', icon: CalendarDays },
         { name: 'Analytics', href: '/analytics', icon: TrendingUp },
+        { name: 'Payroll', href: '/payroll', icon: DollarSign },
         { name: 'Admin Dashboard', href: '/admin', icon: Shield },
         { name: 'Locations', href: '/locations', icon: MapPin },
       ]

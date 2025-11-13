@@ -205,6 +205,31 @@ export const analyticsApi = {
   }) => api.get('/analytics/employees', { params }),
 };
 
+export const payrollApi = {
+  createPeriod: (data: {
+    startDate: string;
+    endDate: string;
+    payDate: string;
+    periodType: 'weekly' | 'biweekly' | 'semimonthly' | 'monthly';
+  }) => api.post('/payroll/periods', data),
+
+  getPeriods: (params?: {
+    status?: 'draft' | 'processing' | 'approved' | 'paid' | 'cancelled';
+    year?: string;
+  }) => api.get('/payroll/periods', { params }),
+
+  processPeriod: (periodId: string) => api.post(`/payroll/${periodId}/process`),
+
+  exportPeriod: (periodId: string, format: 'csv' | 'quickbooks' | 'adp' | 'json') =>
+    api.get(`/payroll/${periodId}/export`, {
+      params: { format },
+      responseType: format === 'json' ? 'json' : 'blob',
+    }),
+
+  approvePeriod: (periodId: string, action: 'approve' | 'mark_paid') =>
+    api.post(`/payroll/${periodId}/approve`, { action }),
+};
+
 // Legacy exports for backward compatibility
 export const usersApi = userApi;
 export const locationsApi = locationApi;

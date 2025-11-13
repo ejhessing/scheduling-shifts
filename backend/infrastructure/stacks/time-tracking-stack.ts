@@ -463,6 +463,45 @@ export class TimeTrackingStack extends cdk.Stack {
       description: 'Get employee performance metrics',
     });
 
+    // ========== Payroll Lambda Functions ==========
+    const createPayrollPeriodFunction = new NodejsFunction(this, 'CreatePayrollPeriodFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/payroll/createPayrollPeriod.ts'),
+      handler: 'handler',
+      description: 'Create payroll period',
+    });
+
+    const getPayrollPeriodsFunction = new NodejsFunction(this, 'GetPayrollPeriodsFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/payroll/getPayrollPeriods.ts'),
+      handler: 'handler',
+      description: 'Get payroll periods',
+    });
+
+    const processPayrollFunction = new NodejsFunction(this, 'ProcessPayrollFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/payroll/processPayroll.ts'),
+      handler: 'handler',
+      description: 'Process payroll for a period',
+      timeout: cdk.Duration.seconds(60),
+      memorySize: 1024,
+    });
+
+    const exportPayrollFunction = new NodejsFunction(this, 'ExportPayrollFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/payroll/exportPayroll.ts'),
+      handler: 'handler',
+      description: 'Export payroll in various formats',
+      timeout: cdk.Duration.seconds(30),
+    });
+
+    const approvePayrollFunction = new NodejsFunction(this, 'ApprovePayrollFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/payroll/approvePayroll.ts'),
+      handler: 'handler',
+      description: 'Approve payroll period',
+    });
+
     // ========== Grant Permissions ==========
     // Grant all Lambda functions read/write access to DynamoDB
     const allFunctions = [
@@ -502,6 +541,11 @@ export class TimeTrackingStack extends cdk.Stack {
       getAnalyticsFunction,
       getBudgetStatusFunction,
       getEmployeeMetricsFunction,
+      createPayrollPeriodFunction,
+      getPayrollPeriodsFunction,
+      processPayrollFunction,
+      exportPayrollFunction,
+      approvePayrollFunction,
     ];
 
     allFunctions.forEach((fn) => {
@@ -719,6 +763,33 @@ export class TimeTrackingStack extends cdk.Stack {
     });
 
     analyticsResource.addResource('employees').addMethod('GET', new apigateway.LambdaIntegration(getEmployeeMetricsFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    // Payroll routes
+    const payrollResource = api.root.addResource('payroll');
+    payrollResource.addResource('periods').addMethod('GET', new apigateway.LambdaIntegration(getPayrollPeriodsFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    payrollResource.addResource('periods').addMethod('POST', new apigateway.LambdaIntegration(createPayrollPeriodFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    const payrollPeriodResource = payrollResource.addResource('{periodId}');
+    payrollPeriodResource.addResource('process').addMethod('POST', new apigateway.LambdaIntegration(processPayrollFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    payrollPeriodResource.addResource('export').addMethod('GET', new apigateway.LambdaIntegration(exportPayrollFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    payrollPeriodResource.addResource('approve').addMethod('POST', new apigateway.LambdaIntegration(approvePayrollFunction), {
       authorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });
