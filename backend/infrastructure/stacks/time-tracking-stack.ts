@@ -439,6 +439,30 @@ export class TimeTrackingStack extends cdk.Stack {
       description: 'Check schedule conflicts',
     });
 
+    // ========== Analytics Lambda Functions ==========
+    const getAnalyticsFunction = new NodejsFunction(this, 'GetAnalyticsFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/analytics/getAnalytics.ts'),
+      handler: 'handler',
+      description: 'Get comprehensive analytics and metrics',
+      timeout: cdk.Duration.seconds(30),
+      memorySize: 1024,
+    });
+
+    const getBudgetStatusFunction = new NodejsFunction(this, 'GetBudgetStatusFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/analytics/getBudgetStatus.ts'),
+      handler: 'handler',
+      description: 'Get budget status and projections',
+    });
+
+    const getEmployeeMetricsFunction = new NodejsFunction(this, 'GetEmployeeMetricsFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/analytics/getEmployeeMetrics.ts'),
+      handler: 'handler',
+      description: 'Get employee performance metrics',
+    });
+
     // ========== Grant Permissions ==========
     // Grant all Lambda functions read/write access to DynamoDB
     const allFunctions = [
@@ -475,6 +499,9 @@ export class TimeTrackingStack extends cdk.Stack {
       setAvailabilityFunction,
       getAvailabilityFunction,
       checkScheduleConflictsFunction,
+      getAnalyticsFunction,
+      getBudgetStatusFunction,
+      getEmployeeMetricsFunction,
     ];
 
     allFunctions.forEach((fn) => {
@@ -675,6 +702,23 @@ export class TimeTrackingStack extends cdk.Stack {
     });
 
     scheduleResource.addResource('conflicts').addMethod('GET', new apigateway.LambdaIntegration(checkScheduleConflictsFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    // Analytics routes
+    const analyticsResource = api.root.addResource('analytics');
+    analyticsResource.addMethod('GET', new apigateway.LambdaIntegration(getAnalyticsFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    analyticsResource.addResource('budget').addMethod('GET', new apigateway.LambdaIntegration(getBudgetStatusFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    analyticsResource.addResource('employees').addMethod('GET', new apigateway.LambdaIntegration(getEmployeeMetricsFunction), {
       authorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });

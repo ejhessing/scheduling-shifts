@@ -182,6 +182,29 @@ export const complianceApi = {
     api.get('/compliance/check', { params }),
 };
 
+export const analyticsApi = {
+  getAnalytics: (params: {
+    startDate: string;
+    endDate: string;
+    locationId?: string;
+    groupBy?: 'day' | 'week' | 'month';
+  }) => api.get('/analytics', { params }),
+
+  getBudgetStatus: (params: {
+    periodStart: string;
+    periodEnd: string;
+    budgetAmount?: number;
+    locationId?: string;
+    alertThreshold?: number;
+  }) => api.get('/analytics/budget', { params }),
+
+  getEmployeeMetrics: (params: {
+    userId?: string;
+    startDate: string;
+    endDate: string;
+  }) => api.get('/analytics/employees', { params }),
+};
+
 // Legacy exports for backward compatibility
 export const usersApi = userApi;
 export const locationsApi = locationApi;

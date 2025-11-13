@@ -11,6 +11,9 @@ import TimesheetPage from './pages/TimesheetPage';
 import LocationsPage from './pages/LocationsPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 import ProfilePage from './pages/ProfilePage';
+import TimeOffPage from './pages/TimeOffPage';
+import ScheduleCalendarPage from './pages/ScheduleCalendarPage';
+import AnalyticsPage from './pages/AnalyticsPage';
 
 // Layout
 import Layout from './components/Layout';
@@ -113,6 +116,30 @@ function App() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/time-off"
+          element={
+            <ProtectedRoute>
+              <TimeOffPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/calendar"
+          element={
+            <ProtectedRoute>
+              <ScheduleCalendarPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <ProtectedRoute>
+              <AnalyticsPage />
             </ProtectedRoute>
           }
         />

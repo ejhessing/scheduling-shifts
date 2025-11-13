@@ -12,6 +12,9 @@ import {
   X,
   MapPin,
   Shield,
+  Umbrella,
+  CalendarDays,
+  TrendingUp,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -37,10 +40,13 @@ export default function Layout({ children }: LayoutProps) {
     { name: 'Time Tracking', href: '/time-tracking', icon: Clock },
     { name: 'Schedule', href: '/schedule', icon: Calendar },
     { name: 'Timesheet', href: '/timesheet', icon: FileText },
+    { name: 'Time Off', href: '/time-off', icon: Umbrella },
   ];
 
   const managerNavigation = isManager
     ? [
+        { name: 'Calendar', href: '/calendar', icon: CalendarDays },
+        { name: 'Analytics', href: '/analytics', icon: TrendingUp },
         { name: 'Admin Dashboard', href: '/admin', icon: Shield },
         { name: 'Locations', href: '/locations', icon: MapPin },
       ]
