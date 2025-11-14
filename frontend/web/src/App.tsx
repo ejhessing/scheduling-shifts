@@ -15,6 +15,7 @@ import TimeOffPage from './pages/TimeOffPage';
 import ScheduleCalendarPage from './pages/ScheduleCalendarPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import PayrollPage from './pages/PayrollPage';
+import DocumentsPage from './pages/DocumentsPage';
 
 // Layout
 import Layout from './components/Layout';
@@ -149,6 +150,14 @@ function App() {
           element={
             <ProtectedRoute>
               <PayrollPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/documents"
+          element={
+            <ProtectedRoute>
+              <DocumentsPage />
             </ProtectedRoute>
           }
         />

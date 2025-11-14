@@ -16,6 +16,7 @@ import {
   CalendarDays,
   TrendingUp,
   DollarSign,
+  FolderOpen,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -42,6 +43,7 @@ export default function Layout({ children }: LayoutProps) {
     { name: 'Schedule', href: '/schedule', icon: Calendar },
     { name: 'Timesheet', href: '/timesheet', icon: FileText },
     { name: 'Time Off', href: '/time-off', icon: Umbrella },
+    { name: 'Documents', href: '/documents', icon: FolderOpen },
   ];
 
   const managerNavigation = isManager

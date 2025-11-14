@@ -502,6 +502,46 @@ export class TimeTrackingStack extends cdk.Stack {
       description: 'Approve payroll period',
     });
 
+    // ========== Document Management Lambda Functions ==========
+    const uploadDocumentFunction = new NodejsFunction(this, 'UploadDocumentFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/documents/uploadDocument.ts'),
+      handler: 'handler',
+      description: 'Upload document and generate presigned URL',
+      environment: {
+        ...commonEnv,
+        BUCKET_NAME: documentsBucket.bucketName,
+      },
+    });
+
+    const getDocumentsFunction = new NodejsFunction(this, 'GetDocumentsFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/documents/getDocuments.ts'),
+      handler: 'handler',
+      description: 'Get documents with filtering',
+    });
+
+    const getDocumentFunction = new NodejsFunction(this, 'GetDocumentFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/documents/getDocument.ts'),
+      handler: 'handler',
+      description: 'Get document with download URL',
+    });
+
+    const deleteDocumentFunction = new NodejsFunction(this, 'DeleteDocumentFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/documents/deleteDocument.ts'),
+      handler: 'handler',
+      description: 'Delete document from S3 and DynamoDB',
+    });
+
+    const approveDocumentFunction = new NodejsFunction(this, 'ApproveDocumentFunction', {
+      ...lambdaDefaults,
+      entry: path.join(__dirname, '../../services/documents/approveDocument.ts'),
+      handler: 'handler',
+      description: 'Approve or reject document',
+    });
+
     // ========== Grant Permissions ==========
     // Grant all Lambda functions read/write access to DynamoDB
     const allFunctions = [
@@ -546,6 +586,11 @@ export class TimeTrackingStack extends cdk.Stack {
       processPayrollFunction,
       exportPayrollFunction,
       approvePayrollFunction,
+      uploadDocumentFunction,
+      getDocumentsFunction,
+      getDocumentFunction,
+      deleteDocumentFunction,
+      approveDocumentFunction,
     ];
 
     allFunctions.forEach((fn) => {
@@ -790,6 +835,32 @@ export class TimeTrackingStack extends cdk.Stack {
     });
 
     payrollPeriodResource.addResource('approve').addMethod('POST', new apigateway.LambdaIntegration(approvePayrollFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    // Document routes
+    const documentsResource = api.root.addResource('documents');
+    documentsResource.addMethod('GET', new apigateway.LambdaIntegration(getDocumentsFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    documentsResource.addMethod('POST', new apigateway.LambdaIntegration(uploadDocumentFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    const documentResource = documentsResource.addResource('{documentId}');
+    documentResource.addMethod('GET', new apigateway.LambdaIntegration(getDocumentFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+    documentResource.addMethod('DELETE', new apigateway.LambdaIntegration(deleteDocumentFunction), {
+      authorizer,
+      authorizationType: apigateway.AuthorizationType.COGNITO,
+    });
+
+    documentResource.addResource('approve').addMethod('POST', new apigateway.LambdaIntegration(approveDocumentFunction), {
       authorizer,
       authorizationType: apigateway.AuthorizationType.COGNITO,
     });

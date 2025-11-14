@@ -230,6 +230,36 @@ export const payrollApi = {
     api.post(`/payroll/${periodId}/approve`, { action }),
 };
 
+export const documentsApi = {
+  uploadDocument: (data: {
+    fileName: string;
+    fileSize: number;
+    fileType: string;
+    category: string;
+    userId?: string;
+    description?: string;
+    tags?: string[];
+    expirationDate?: string;
+    metadata?: any;
+  }) => api.post('/documents', data),
+
+  getDocuments: (params?: {
+    userId?: string;
+    category?: string;
+    status?: string;
+    search?: string;
+    expiring?: boolean;
+    expired?: boolean;
+  }) => api.get('/documents', { params }),
+
+  getDocument: (documentId: string) => api.get(`/documents/${documentId}`),
+
+  deleteDocument: (documentId: string) => api.delete(`/documents/${documentId}`),
+
+  approveDocument: (documentId: string, action: 'approve' | 'reject', notes?: string) =>
+    api.post(`/documents/${documentId}/approve`, { action, notes }),
+};
+
 // Legacy exports for backward compatibility
 export const usersApi = userApi;
 export const locationsApi = locationApi;
