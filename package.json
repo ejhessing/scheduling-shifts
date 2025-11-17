@@ -1,31 +1,31 @@
 {
   "name": "time-tracking-app",
-  "version": "0.1.0",
-  "description": "Ultimate Time Tracking & Scheduling App - AWS Serverless Platform",
+  "version": "1.0.0",
+  "description": "Ultimate Time Tracking & Scheduling Platform",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "backend",
+    "frontend/web"
   ],
   "scripts": {
-    "build": "npm run build --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint --workspaces --if-present",
-    "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
-    "dev:web": "npm run dev -w @time-tracking/web",
-    "dev:backend": "npm run dev -w @time-tracking/backend",
-    "deploy": "npm run deploy -w @time-tracking/infrastructure",
-    "cdk": "npm run cdk -w @time-tracking/infrastructure"
+    "install:all": "npm install && cd backend && npm install && cd ../frontend/web && npm install",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend/web && npm run dev",
+    "deploy:backend": "cd backend && npm run deploy",
+    "build:frontend": "cd frontend/web && npm run build",
+    "test": "npm run test --workspaces"
   },
+  "keywords": [
+    "time-tracking",
+    "scheduling",
+    "workforce-management",
+    "aws",
+    "serverless"
+  ],
+  "author": "",
+  "license": "MIT",
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@typescript-eslint/eslint-plugin": "^6.13.0",
-    "@typescript-eslint/parser": "^6.13.0",
-    "eslint": "^8.55.0",
-    "prettier": "^3.1.0",
-    "typescript": "^5.3.3"
-  },
-  "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5"
   }
 }
